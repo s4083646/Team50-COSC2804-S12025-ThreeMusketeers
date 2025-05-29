@@ -7,9 +7,9 @@ COSC2804 - C++ Programming Studio - RMIT university
 - Team member 3: <Shahira Jasmine Binti Yahaya, s411155>
 
 ## Branchers
-- John Doe, latest individual code in branch `acc123`
-- Jane Doe, latest individual code in branch `abc123`
-- Alex Kim, latest individual code in branch `abb123`
+- Dhiya Batrisya Binti Norfaiz, latest individual code in branch `acc123`
+- Sahar Zainullah, latest individual code in branch `abc123`
+- Shahira Jasmine Binti Yahaya, latest individual code in branch `abb123`
 - Intergrated code in branch `main`
 
 ## Video recording
