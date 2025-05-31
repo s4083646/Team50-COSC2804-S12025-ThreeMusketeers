@@ -93,15 +93,45 @@ int main(int argc, char** argv){
                 // Reading Maze from terminal
                 // TODO: Read the maze to an appropriate ADT
                 //          and use it throughout the code
-                std::vector< std::vector<char> > mazeStructure;
-                mcpp::Coordinate basePoint(0,0,0);
-                bool success = readMaze(mazeStructure, basePoint);
-                if(success){
-                    std::cout << "Maze read successfully" << std::endl;
-                    curState = ST_Main;
-                    printMaze(mazeStructure);
-                }else{
-                    std::cout << "Error Reading Maze. Try again." << std::endl;
+                
+                // --- Task 1: read → validate → (opt) auto-fix → print ---
+                std::vector<std::vector<char>> mazeStructure;
+                mcpp::Coordinate basePoint;
+
+                // 1) Read & basic parse
+                if (!readMaze(mazeStructure, basePoint)) {
+                    std::cout << "Error reading maze. Try again.\n\n";
+                } else {
+                    // 2) Validate
+                    int entX, entZ;
+                    bool loops, isolated;
+                    if (!validateMaze(mazeStructure, entX, entZ, loops, isolated)) {
+                        std::cout << "Validation failed:";
+                        if (isolated) std::cout << " isolated regions;";
+                        if (loops)    std::cout << " loops detected;";
+                        std::cout << "\nAuto-fix? (y/n): ";
+
+                        char c; std::cin >> c;
+                        if (c=='y' || c=='Y') {
+                            autoFixMaze(mazeStructure);
+                            // re-run validation
+                            if (!validateMaze(mazeStructure, entX, entZ, loops, isolated)) {
+                                std::cout << "Auto-fix incomplete. Retry input.\n\n";
+                            } else {
+                                std::cout << "Maze auto-fixed.\n\n";
+                                std::cout << "Maze read and validated successfully.\n";
+                                printMaze(mazeStructure);
+                                curState = ST_Main;
+                            }
+                        } else {
+                            std::cout << "Error Reading Maze. Try again.\n\n";
+                        }
+                    } else {
+                        // 3) Success
+                        std::cout << "Maze read and validated successfully.\n\n";
+                        printMaze(mazeStructure);
+                        curState = ST_Main;
+                    }
                 }
 
             }else if(menuItem == 2){

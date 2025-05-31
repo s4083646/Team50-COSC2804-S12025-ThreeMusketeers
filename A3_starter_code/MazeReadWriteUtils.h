@@ -1,5 +1,11 @@
+#ifndef MAZEREADWRITEUTILS_H
+#define MAZEREADWRITEUTILS_H
+
+
 #include <iostream>
+#include <vector>
 #include "mcpp/mcpp.h"
+#include <queue>
 #include <deque>
 
 
@@ -27,7 +33,6 @@ bool ReadBasePoint(mcpp::Coordinate& start){
     
     return success;
    
-    
 }
 
 bool readLengthWidth(unsigned int& xlength, unsigned int& zlength){
@@ -106,6 +111,61 @@ bool readMaze(std::vector< std::vector<char> >& maze, mcpp::Coordinate& basePoin
     
 }
 
+bool validateMaze(const std::vector<std::vector<char>>& M,
+                  int& entX, int& entZ,
+                  bool& hasLoops, bool& hasIsolated)
+{
+    int Z = M.size(), X = M[0].size();
+    std::vector<std::pair<int,int>> opens;
+
+    // 1) collect '.' on the boundary
+    auto checkCell = [&](int z,int x){
+      if (M[z][x]=='.') opens.emplace_back(z,x);
+    };
+    for (int x=0; x<X; ++x) { checkCell(0,x); checkCell(Z-1,x); }
+    for (int z=1; z<Z-1; ++z) { checkCell(z,0); checkCell(z,X-1); }
+    if (opens.size()!=1) return false;
+    std::tie(entZ,entX) = opens[0];
+
+    // 2) flood-fill connectivity
+    int total=0, reached=0;
+    for (auto& row:M) for (char c:row) if (c=='.') ++total;
+    std::vector<std::vector<bool>> seen(Z, std::vector<bool>(X,false));
+    std::queue<std::pair<int,int>> q;
+    seen[entZ][entX]=true;
+    q.push({entZ,entX});
+    while(!q.empty()){
+      auto [z,x] = q.front(); q.pop(); ++reached;
+      for (auto d: std::vector<std::pair<int,int>>{{1,0},{-1,0},{0,1},{0,-1}}) {
+        int nz=z+d.first, nx=x+d.second;
+        if (nz>=0&&nz<Z&&nx>=0&&nx<X
+            && !seen[nz][nx] && M[nz][nx]=='.') {
+          seen[nz][nx] = true;
+          q.push({nz,nx});
+        }
+      }
+    }
+    hasIsolated = (reached < total);
+
+    // 3) cycle‐detection via edge vs vertex count
+    int edges=0, verts=0;
+    for(int z=0; z<Z; ++z) for(int x=0; x<X; ++x){
+      if (M[z][x]=='.'){
+        ++verts;
+        if (z+1<Z && M[z+1][x]=='.') ++edges;
+        if (x+1<X && M[z][x+1]=='.') ++edges;
+      }
+    }
+    hasLoops = (edges > verts-1);
+
+    return !(hasIsolated||hasLoops);
+}
+
+// Stub for future auto‐fix logic
+void autoFixMaze(std::vector<std::vector<char>>& /*M*/) {
+    std::cout << "Auto‐fix not implemented yet.\n";
+}
+
 void printMaze(std::vector< std::vector<char> >& maze){
     std::cout << "**Printing Maze Structure**" << std::endl;
     for (unsigned int z = 0; z < maze.size(); z++){
@@ -125,6 +185,9 @@ void printMaze(std::vector< std::vector<char> >& maze){
 
 }
 
+
+
+#endif
 
 
 
